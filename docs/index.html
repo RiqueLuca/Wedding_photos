@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Henrique &amp; Thayna ✦ Galeria de Fotos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-label">Casamento de</p>
+      <h1 class="hero-names">Henrique <span class="ampersand">&amp;</span> Thayna</h1>
+      <p class="hero-date">Março de 2027</p>
+      <div class="hero-divider">
+        <span class="divider-line"></span>
+        <span class="divider-icon">✦</span>
+        <span class="divider-line"></span>
+      </div>
+      <p class="hero-sub">Compartilhe seus momentos conosco</p>
+      <a href="#capture" class="btn-hero">Tirar uma foto</a>
+    </div>
+  </header>
+
+  <!-- Camera Section -->
+  <section id="capture" class="section section-capture">
+    <div class="container">
+      <div class="section-title">
+        <span class="section-tag">Registre o momento</span>
+        <h2>Sua foto na nossa história</h2>
+        <p>Use a câmera abaixo ou envie uma foto da sua galeria</p>
+      </div>
+
+      <div class="capture-card">
+        <!-- Camera -->
+        <div class="camera-area" id="cameraArea">
+          <video id="cameraVideo" autoplay playsinline muted></video>
+          <canvas id="cameraCanvas" style="display:none"></canvas>
+          <div class="camera-frame"></div>
+          <div class="camera-placeholder" id="cameraPlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <p>Clique em "Ligar câmera" para começar</p>
+          </div>
+          <img id="capturedPreview" class="captured-preview" style="display:none" alt="Foto capturada" />
+        </div>
+
+        <!-- Controls -->
+        <div class="capture-controls">
+          <div class="controls-row">
+            <button class="btn btn-outline" id="btnStartCamera">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              Ligar câmera
+            </button>
+            <button class="btn btn-outline" id="btnSwitchCamera" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+              Virar
+            </button>
+          </div>
+
+          <button class="btn btn-capture" id="btnCapture" disabled>
+            Capturar foto
+          </button>
+
+          <div class="divider-or"><span>ou</span></div>
+
+          <label class="btn btn-outline btn-upload" for="fileInput">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            Enviar da galeria
+          </label>
+          <input type="file" id="fileInput" accept="image/*" style="display:none" multiple />
+
+          <div class="preview-actions" id="previewActions" style="display:none">
+            <button class="btn btn-gold" id="btnSend">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Salvar foto
+            </button>
+            <button class="btn btn-outline" id="btnRetake">Tirar outra</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Section -->
+  <section id="gallery" class="section section-gallery">
+    <div class="container">
+      <div class="section-title">
+        <span class="section-tag">Memórias</span>
+        <h2>Galeria de fotos</h2>
+        <p id="photoCount">Carregando fotos...</p>
+      </div>
+
+      <div class="gallery-grid" id="galleryGrid">
+        <div class="gallery-loading">
+          <div class="loading-spinner"></div>
+          <p>Carregando galeria...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" style="display:none">
+    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <button class="lightbox-nav lightbox-prev" id="lightboxPrev">&#8249;</button>
+    <button class="lightbox-nav lightbox-next" id="lightboxNext">&#8250;</button>
+    <div class="lightbox-content">
+      <img id="lightboxImg" src="" alt="" />
+      <div class="lightbox-actions">
+        <button class="btn btn-gold btn-sm" id="lightboxDownload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="lightbox-overlay" id="lightboxOverlay" style="display:none"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-names">Henrique <span class="ampersand">&amp;</span> Thayna</div>
+    <p class="footer-date">Março de 2027</p>
+    <p class="footer-heart">♡ Feito com amor</p>
+  </footer>
+
+  <!-- Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
