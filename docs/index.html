@@ -11,7 +11,7 @@
 </head>
 <body>
 
-  <!-- Hero -->
+  <!-- ── Hero ── -->
   <header class="hero">
     <div class="hero-overlay"></div>
     <div class="hero-content">
@@ -23,71 +23,136 @@
         <span class="divider-icon">✦</span>
         <span class="divider-line"></span>
       </div>
-      <p class="hero-sub">Compartilhe seus momentos conosco</p>
-      <a href="#capture" class="btn-hero">Tirar uma foto</a>
+      <p class="hero-sub">Registre este momento especial</p>
+
+      <div class="hero-actions">
+        <button class="hero-btn hero-btn-primary" id="heroCamera">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Tirar Foto
+        </button>
+        <label class="hero-btn hero-btn-secondary" for="heroFileInput">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Enviar da Galeria
+        </label>
+        <input type="file" id="heroFileInput" accept="image/*" multiple style="display:none" />
+      </div>
     </div>
+
+    <a href="#gallery" class="hero-scroll-hint">
+      <span>Ver galeria</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </a>
   </header>
 
-  <!-- Camera Section -->
-  <section id="capture" class="section section-capture">
-    <div class="container">
+  <!-- ── Camera Section ── -->
+  <section id="camera" class="section section-camera">
+    <div class="container-narrow">
+
       <div class="section-title">
         <span class="section-tag">Registre o momento</span>
-        <h2>Sua foto na nossa história</h2>
-        <p>Use a câmera abaixo ou envie uma foto da sua galeria</p>
+        <h2>Tire sua foto</h2>
       </div>
 
-      <div class="capture-card">
-        <!-- Camera -->
-        <div class="camera-area" id="cameraArea">
-          <video id="cameraVideo" autoplay playsinline muted></video>
-          <canvas id="cameraCanvas" style="display:none"></canvas>
-          <div class="camera-frame"></div>
-          <div class="camera-placeholder" id="cameraPlaceholder">
+      <!-- States: idle | live | preview -->
+      <div class="cam-card" id="camCard">
+
+        <!-- Idle -->
+        <div class="cam-state" id="stateIdle">
+          <div class="cam-idle-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <p>Clique em "Ligar câmera" para começar</p>
           </div>
-          <img id="capturedPreview" class="captured-preview" style="display:none" alt="Foto capturada" />
-        </div>
-
-        <!-- Controls -->
-        <div class="capture-controls">
-          <div class="controls-row">
-            <button class="btn btn-outline" id="btnStartCamera">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-              Ligar câmera
-            </button>
-            <button class="btn btn-outline" id="btnSwitchCamera" style="display:none">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
-              Virar
-            </button>
-          </div>
-
-          <button class="btn btn-capture" id="btnCapture" disabled>
-            Capturar foto
+          <p class="cam-idle-text">Clique abaixo para ligar a câmera</p>
+          <button class="btn-primary btn-big" id="btnLigar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Ligar Câmera
           </button>
+        </div>
 
-          <div class="divider-or"><span>ou</span></div>
-
-          <label class="btn btn-outline btn-upload" for="fileInput">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-            Enviar da galeria
-          </label>
-          <input type="file" id="fileInput" accept="image/*" style="display:none" multiple />
-
-          <div class="preview-actions" id="previewActions" style="display:none">
-            <button class="btn btn-gold" id="btnSend">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              Salvar foto
+        <!-- Live Camera -->
+        <div class="cam-state" id="stateLive" style="display:none">
+          <div class="cam-viewport">
+            <video id="cameraVideo" autoplay playsinline muted></video>
+            <canvas id="cameraCanvas" style="display:none"></canvas>
+            <div class="cam-corners"></div>
+            <button class="btn-switch" id="btnSwitch" title="Virar câmera">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
             </button>
-            <button class="btn btn-outline" id="btnRetake">Tirar outra</button>
+          </div>
+          <button class="btn-capture" id="btnCapture">
+            <span class="btn-capture-ring"></span>
+            <span class="btn-capture-dot"></span>
+          </button>
+          <p class="cam-hint">Toque no botão para capturar</p>
+        </div>
+
+        <!-- Preview -->
+        <div class="cam-state" id="statePreview" style="display:none">
+          <div class="cam-viewport">
+            <img id="capturedPreview" src="" alt="Foto capturada" />
+          </div>
+          <div class="preview-actions">
+            <button class="btn-primary btn-big" id="btnEnviar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Enviar Foto
+            </button>
+            <button class="btn-outline-dark" id="btnRetake">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+              Tirar outra
+            </button>
           </div>
         </div>
+
+      </div><!-- /cam-card -->
+
+      <!-- Ou enviar da galeria -->
+      <div class="divider-or-section">
+        <span class="divider-line-h"></span>
+        <span class="divider-label">ou</span>
+        <span class="divider-line-h"></span>
       </div>
+      <div class="center">
+        <label class="btn-secondary btn-big" for="sectionFileInput">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Enviar foto da galeria
+        </label>
+        <input type="file" id="sectionFileInput" accept="image/*" multiple style="display:none" />
+      </div>
+
     </div>
   </section>
 
-  <!-- Gallery Section -->
+  <!-- ── Messages Section ── -->
+  <section id="messages" class="section section-messages">
+    <div class="container-narrow">
+      <div class="section-title">
+        <span class="section-tag">Deixe seu carinho</span>
+        <h2>Mensagem aos noivos</h2>
+        <p>Escreva um recado especial para Henrique &amp; Thayna</p>
+      </div>
+
+      <div class="msg-form-card">
+        <div class="msg-form-fields">
+          <div class="field-group">
+            <label class="field-label" for="msgName">Seu nome</label>
+            <input class="field-input" type="text" id="msgName" placeholder="Ex: Tia Maria" maxlength="60" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="msgText">Mensagem</label>
+            <textarea class="field-textarea" id="msgText" placeholder="Escreva seu recado aqui..." maxlength="500" rows="4"></textarea>
+            <span class="char-count" id="charCount">0 / 500</span>
+          </div>
+        </div>
+        <button class="btn-primary btn-big" id="btnSendMsg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Enviar Mensagem
+        </button>
+      </div>
+
+      <div class="msg-list" id="msgList"></div>
+    </div>
+  </section>
+
+  <!-- ── Gallery Section ── -->
   <section id="gallery" class="section section-gallery">
     <div class="container">
       <div class="section-title">
@@ -96,8 +161,8 @@
         <p id="photoCount">Carregando fotos...</p>
       </div>
 
-      <div class="gallery-grid" id="galleryGrid">
-        <div class="gallery-loading">
+      <div class="insta-grid" id="galleryGrid">
+        <div class="insta-loading">
           <div class="loading-spinner"></div>
           <p>Carregando galeria...</p>
         </div>
@@ -105,31 +170,30 @@
     </div>
   </section>
 
-  <!-- Lightbox -->
+  <!-- ── Lightbox ── -->
   <div class="lightbox" id="lightbox" style="display:none">
     <button class="lightbox-close" id="lightboxClose">✕</button>
     <button class="lightbox-nav lightbox-prev" id="lightboxPrev">&#8249;</button>
     <button class="lightbox-nav lightbox-next" id="lightboxNext">&#8250;</button>
-    <div class="lightbox-content">
+    <div class="lightbox-inner">
       <img id="lightboxImg" src="" alt="" />
-      <div class="lightbox-actions">
-        <button class="btn btn-gold btn-sm" id="lightboxDownload">
+      <div class="lightbox-bar">
+        <button class="btn-dl" id="lightboxDownload">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download
         </button>
       </div>
     </div>
   </div>
-  <div class="lightbox-overlay" id="lightboxOverlay" style="display:none"></div>
+  <div class="lightbox-bg" id="lightboxBg" style="display:none"></div>
 
-  <!-- Footer -->
+  <!-- ── Footer ── -->
   <footer class="footer">
     <div class="footer-names">Henrique <span class="ampersand">&amp;</span> Thayna</div>
     <p class="footer-date">Março de 2027</p>
     <p class="footer-heart">♡ Feito com amor</p>
   </footer>
 
-  <!-- Toast -->
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="script.js"></script>
