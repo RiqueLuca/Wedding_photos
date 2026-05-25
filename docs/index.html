@@ -34,135 +34,120 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
           Enviar da Galeria
         </label>
-        <input type="file" id="heroFileInput" accept="image/*" multiple style="display:none" />
+        <input type="file" id="heroFileInput" accept="image/*" style="display:none" />
       </div>
     </div>
 
-    <a href="#gallery" class="hero-scroll-hint">
+    <a href="#post" class="hero-scroll-hint">
       <span>Ver galeria</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
     </a>
   </header>
 
-  <!-- ── Camera Section ── -->
-  <section id="camera" class="section section-camera">
+  <!-- ── Post Creator ── -->
+  <section id="post" class="section section-post">
     <div class="container-narrow">
 
       <div class="section-title">
         <span class="section-tag">Registre o momento</span>
-        <h2>Tire sua foto</h2>
+        <h2>Compartilhe sua foto</h2>
       </div>
 
-      <!-- States: idle | live | preview -->
-      <div class="cam-card" id="camCard">
+      <!-- Card único: câmera + mensagem -->
+      <div class="post-card" id="postCard">
 
-        <!-- Idle -->
-        <div class="cam-state" id="stateIdle">
-          <div class="cam-idle-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <!-- STEP 1: Câmera -->
+        <div class="post-step" id="stepCamera">
+
+          <!-- Idle -->
+          <div class="cam-idle" id="stateIdle">
+            <div class="cam-idle-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+            <p class="cam-idle-text">Clique abaixo para ligar a câmera</p>
+            <button class="btn-primary btn-big" id="btnLigar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Ligar Câmera
+            </button>
+            <div class="divider-or">
+              <span class="divider-line-h"></span>
+              <span class="divider-label">ou</span>
+              <span class="divider-line-h"></span>
+            </div>
+            <label class="btn-secondary btn-big" for="cardFileInput">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              Escolher da galeria
+            </label>
+            <input type="file" id="cardFileInput" accept="image/*" style="display:none" />
           </div>
-          <p class="cam-idle-text">Clique abaixo para ligar a câmera</p>
-          <button class="btn-primary btn-big" id="btnLigar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            Ligar Câmera
-          </button>
-        </div>
 
-        <!-- Live Camera -->
-        <div class="cam-state" id="stateLive" style="display:none">
-          <div class="cam-viewport">
-            <video id="cameraVideo" autoplay playsinline muted></video>
-            <canvas id="cameraCanvas" style="display:none"></canvas>
-            <div class="cam-corners"></div>
-            <button class="btn-switch" id="btnSwitch" title="Virar câmera">
+          <!-- Live -->
+          <div class="cam-live" id="stateLive" style="display:none">
+            <div class="cam-viewport">
+              <video id="cameraVideo" autoplay playsinline muted></video>
+              <canvas id="cameraCanvas" style="display:none"></canvas>
+              <button class="btn-switch" id="btnSwitch" title="Virar câmera">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+              </button>
+            </div>
+            <div class="cam-bottom">
+              <button class="btn-capture" id="btnCapture">
+                <span class="btn-capture-ring"></span>
+                <span class="btn-capture-dot"></span>
+              </button>
+              <p class="cam-hint">Toque no círculo para capturar</p>
+            </div>
+          </div>
+
+        </div><!-- /stepCamera -->
+
+        <!-- STEP 2: Preview + Mensagem (oculto até ter foto) -->
+        <div class="post-step" id="stepMessage" style="display:none">
+
+          <!-- Preview da foto -->
+          <div class="preview-wrap">
+            <img id="capturedPreview" src="" alt="Foto" />
+            <button class="btn-change-photo" id="btnChangePhoto" title="Trocar foto">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+              Trocar foto
             </button>
           </div>
-          <button class="btn-capture" id="btnCapture">
-            <span class="btn-capture-ring"></span>
-            <span class="btn-capture-dot"></span>
-          </button>
-          <p class="cam-hint">Toque no botão para capturar</p>
-        </div>
 
-        <!-- Preview -->
-        <div class="cam-state" id="statePreview" style="display:none">
-          <div class="cam-viewport">
-            <img id="capturedPreview" src="" alt="Foto capturada" />
-          </div>
-          <div class="preview-actions">
-            <button class="btn-primary btn-big" id="btnEnviar">
+          <!-- Formulário de mensagem -->
+          <div class="msg-form">
+            <div class="field-group">
+              <label class="field-label" for="postName">Seu nome</label>
+              <input class="field-input" type="text" id="postName" placeholder="Ex: Tia Maria" maxlength="60" />
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="postMsg">Mensagem para os noivos</label>
+              <textarea class="field-textarea" id="postMsg" placeholder="Escreva seu recado aqui..." maxlength="400" rows="3"></textarea>
+              <span class="char-count" id="charCount">0 / 400</span>
+            </div>
+            <button class="btn-primary btn-big" id="btnPublish">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              Enviar Foto
-            </button>
-            <button class="btn-outline-dark" id="btnRetake">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
-              Tirar outra
+              Publicar
             </button>
           </div>
-        </div>
 
-      </div><!-- /cam-card -->
+        </div><!-- /stepMessage -->
 
-      <!-- Ou enviar da galeria -->
-      <div class="divider-or-section">
-        <span class="divider-line-h"></span>
-        <span class="divider-label">ou</span>
-        <span class="divider-line-h"></span>
-      </div>
-      <div class="center">
-        <label class="btn-secondary btn-big" for="sectionFileInput">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Enviar foto da galeria
-        </label>
-        <input type="file" id="sectionFileInput" accept="image/*" multiple style="display:none" />
-      </div>
+      </div><!-- /post-card -->
 
     </div>
   </section>
 
-  <!-- ── Messages Section ── -->
-  <section id="messages" class="section section-messages">
-    <div class="container-narrow">
-      <div class="section-title">
-        <span class="section-tag">Deixe seu carinho</span>
-        <h2>Mensagem aos noivos</h2>
-        <p>Escreva um recado especial para Henrique &amp; Thayna</p>
-      </div>
-
-      <div class="msg-form-card">
-        <div class="msg-form-fields">
-          <div class="field-group">
-            <label class="field-label" for="msgName">Seu nome</label>
-            <input class="field-input" type="text" id="msgName" placeholder="Ex: Tia Maria" maxlength="60" />
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="msgText">Mensagem</label>
-            <textarea class="field-textarea" id="msgText" placeholder="Escreva seu recado aqui..." maxlength="500" rows="4"></textarea>
-            <span class="char-count" id="charCount">0 / 500</span>
-          </div>
-        </div>
-        <button class="btn-primary btn-big" id="btnSendMsg">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          Enviar Mensagem
-        </button>
-      </div>
-
-      <div class="msg-list" id="msgList"></div>
-    </div>
-  </section>
-
-  <!-- ── Gallery Section ── -->
+  <!-- ── Gallery / Feed ── -->
   <section id="gallery" class="section section-gallery">
     <div class="container">
       <div class="section-title">
         <span class="section-tag">Memórias</span>
         <h2>Galeria de fotos</h2>
-        <p id="photoCount">Carregando fotos...</p>
+        <p id="photoCount">Carregando...</p>
       </div>
 
-      <div class="insta-grid" id="galleryGrid">
-        <div class="insta-loading">
+      <div class="feed-grid" id="feedGrid">
+        <div class="feed-loading">
           <div class="loading-spinner"></div>
           <p>Carregando galeria...</p>
         </div>
@@ -177,12 +162,11 @@
     <button class="lightbox-nav lightbox-next" id="lightboxNext">&#8250;</button>
     <div class="lightbox-inner">
       <img id="lightboxImg" src="" alt="" />
-      <div class="lightbox-bar">
-        <button class="btn-dl" id="lightboxDownload">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download
-        </button>
-      </div>
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+      <button class="btn-dl" id="lightboxDl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
     </div>
   </div>
   <div class="lightbox-bg" id="lightboxBg" style="display:none"></div>
@@ -195,7 +179,6 @@
   </footer>
 
   <div class="toast-container" id="toastContainer"></div>
-
   <script src="script.js"></script>
 </body>
 </html>
