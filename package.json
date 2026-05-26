@@ -1,6 +1,6 @@
 {
   "name": "wedding-photo-gallery",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Wedding photo gallery for Henrique & Thayna",
   "main": "server.js",
   "scripts": {
@@ -8,9 +8,12 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
-    "uuid": "^9.0.0"
+    "pg": "^8.11.3",
+    "sharp": "^0.33.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
