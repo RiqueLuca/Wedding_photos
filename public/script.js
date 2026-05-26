@@ -1,34 +1,52 @@
 /* ── State ── */
-let stream = null;
-let facingMode = 'environment';
+let stream      = null;
+let facingMode  = 'environment';
 let capturedBlob = null;
-let photos = [];
-let lightboxIndex = 0;
+let posts       = [];
+let lightboxIdx = 0;
 
 /* ── DOM ── */
-const video        = document.getElementById('cameraVideo');
-const canvas       = document.getElementById('cameraCanvas');
-const placeholder  = document.getElementById('cameraPlaceholder');
-const preview      = document.getElementById('capturedPreview');
-const btnStart     = document.getElementById('btnStartCamera');
-const btnSwitch    = document.getElementById('btnSwitchCamera');
-const btnCapture   = document.getElementById('btnCapture');
-const btnSend      = document.getElementById('btnSend');
-const btnRetake    = document.getElementById('btnRetake');
-const fileInput    = document.getElementById('fileInput');
-const previewActs  = document.getElementById('previewActions');
-const uploadStatus = document.getElementById('uploadStatus');
-const uploadFill   = document.getElementById('uploadProgressFill');
-const uploadText   = document.getElementById('uploadStatusText');
-const galleryGrid  = document.getElementById('galleryGrid');
-const photoCount   = document.getElementById('photoCount');
-const lightbox     = document.getElementById('lightbox');
-const lightboxOvr  = document.getElementById('lightboxOverlay');
-const lightboxImg  = document.getElementById('lightboxImg');
-const lightboxDl   = document.getElementById('lightboxDownload');
-const lightboxClose= document.getElementById('lightboxClose');
-const lightboxPrev = document.getElementById('lightboxPrev');
-const lightboxNext = document.getElementById('lightboxNext');
+const video          = document.getElementById('cameraVideo');
+const canvas         = document.getElementById('cameraCanvas');
+const previewImg     = document.getElementById('capturedPreview');
+const stateIdle      = document.getElementById('stateIdle');
+const stateLive      = document.getElementById('stateLive');
+const stepCamera     = document.getElementById('stepCamera');
+const stepMessage    = document.getElementById('stepMessage');
+const btnLigar       = document.getElementById('btnLigar');
+const btnSwitch      = document.getElementById('btnSwitch');
+const btnCapture     = document.getElementById('btnCapture');
+const btnChangePhoto = document.getElementById('btnChangePhoto');
+const btnPublish     = document.getElementById('btnPublish');
+const cardFileInput  = document.getElementById('cardFileInput');
+const heroCamera     = document.getElementById('heroCamera');
+const heroFile       = document.getElementById('heroFileInput');
+const postName       = document.getElementById('postName');
+const postMsg        = document.getElementById('postMsg');
+const charCount      = document.getElementById('charCount');
+const uploadBar      = document.getElementById('uploadBar');
+const uploadBarFill  = document.getElementById('uploadBarFill');
+const feedGrid       = document.getElementById('feedGrid');
+const photoCount     = document.getElementById('photoCount');
+const lightbox       = document.getElementById('lightbox');
+const lightboxBg     = document.getElementById('lightboxBg');
+const lightboxImg    = document.getElementById('lightboxImg');
+const lightboxCaption= document.getElementById('lightboxCaption');
+const lightboxDl     = document.getElementById('lightboxDl');
+const lightboxClose  = document.getElementById('lightboxClose');
+const lightboxPrev   = document.getElementById('lightboxPrev');
+const lightboxNext   = document.getElementById('lightboxNext');
+
+/* ── Step helpers ── */
+function showCameraState(name) {
+  stateIdle.style.display = name === 'idle' ? 'flex' : 'none';
+  stateLive.style.display = name === 'live' ? 'flex' : 'none';
+}
+
+function showStep(name) {
+  stepCamera.style.display  = name === 'camera'  ? 'flex' : 'none';
+  stepMessage.style.display = name === 'message' ? 'flex' : 'none';
+}
 
 /* ── Camera ── */
 async function startCamera() {
@@ -39,38 +57,43 @@ async function startCamera() {
       audio: false,
     });
     video.srcObject = stream;
-    video.style.display = 'block';
-    placeholder.style.display = 'none';
-    preview.style.display = 'none';
-    capturedBlob = null;
-    previewActs.style.display = 'none';
-    btnCapture.disabled = false;
-    btnStart.textContent = 'Desligar';
-    btnStart.style.borderColor = '#a05050';
-    btnStart.style.color = '#a05050';
-    btnSwitch.style.display = 'flex';
-    showToast('Câmera ligada!', 'info');
+    showCameraState('live');
+    showStep('camera');
   } catch (err) {
-    showToast('Não foi possível acessar a câmera: ' + (err.message || err), 'error');
+    showToast('Câmera indisponível: ' + (err.message || err), 'error');
+    showCameraState('idle');
   }
 }
 
-function stopCamera() {
+function stopStream() {
   if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-  video.srcObject = null;
-  video.style.display = 'none';
-  placeholder.style.display = 'flex';
-  btnCapture.disabled = true;
-  btnStart.textContent = 'Ligar câmera';
-  btnStart.style.borderColor = '';
-  btnStart.style.color = '';
-  btnSwitch.style.display = 'none';
 }
 
-btnStart.addEventListener('click', () => {
-  if (stream) stopCamera();
-  else startCamera();
+function goToMessageStep(blob) {
+  capturedBlob = blob;
+  const url = URL.createObjectURL(blob);
+  previewImg.src = url;
+  previewImg.onload = () => URL.revokeObjectURL(url);
+  stopStream();
+  showStep('message');
+}
+
+/* ── Hero buttons ── */
+heroCamera.addEventListener('click', () => {
+  document.getElementById('post').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(startCamera, 380);
 });
+
+heroFile.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  heroFile.value = '';
+  document.getElementById('post').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => goToMessageStep(file), 300);
+});
+
+/* ── Camera section ── */
+btnLigar.addEventListener('click', startCamera);
 
 btnSwitch.addEventListener('click', () => {
   facingMode = facingMode === 'environment' ? 'user' : 'environment';
@@ -81,208 +104,216 @@ btnCapture.addEventListener('click', () => {
   if (!stream) return;
   canvas.width  = video.videoWidth  || 1280;
   canvas.height = video.videoHeight || 720;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0);
-  canvas.toBlob(blob => {
-    capturedBlob = blob;
-    preview.src = URL.createObjectURL(blob);
-    preview.style.display = 'block';
-    video.style.display = 'none';
-    previewActs.style.display = 'flex';
-    stopCamera();
-  }, 'image/jpeg', 0.92);
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.toBlob(blob => goToMessageStep(blob), 'image/jpeg', 0.92);
 });
 
-btnRetake.addEventListener('click', () => {
-  preview.style.display = 'none';
-  previewActs.style.display = 'none';
+cardFileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  cardFileInput.value = '';
+  goToMessageStep(file);
+});
+
+btnChangePhoto.addEventListener('click', () => {
   capturedBlob = null;
-  startCamera();
+  previewImg.src = '';
+  showCameraState('idle');
+  showStep('camera');
 });
 
-/* ── File Input ── */
-fileInput.addEventListener('change', async e => {
-  const files = Array.from(e.target.files);
-  if (!files.length) return;
-  for (const file of files) await uploadPhoto(file);
-  fileInput.value = '';
+/* ── Publish (XHR with progress) ── */
+postMsg.addEventListener('input', () => {
+  charCount.textContent = `${postMsg.value.length} / 400`;
 });
 
-/* ── Send captured ── */
-btnSend.addEventListener('click', () => {
-  if (!capturedBlob) return;
-  const file = new File([capturedBlob], `foto-${Date.now()}.jpg`, { type: 'image/jpeg' });
-  uploadPhoto(file).then(() => {
-    preview.style.display = 'none';
-    previewActs.style.display = 'none';
-    placeholder.style.display = 'flex';
-    capturedBlob = null;
+btnPublish.addEventListener('click', () => {
+  if (!capturedBlob) { showToast('Selecione uma foto primeiro.', 'error'); return; }
+
+  const formData = new FormData();
+  formData.append('photo', capturedBlob instanceof File ? capturedBlob : new File([capturedBlob], 'foto.jpg', { type: 'image/jpeg' }));
+  formData.append('name', postName.value.trim() || 'Convidado');
+  formData.append('message', postMsg.value.trim());
+
+  btnPublish.disabled = true;
+  btnPublish.textContent = 'Enviando...';
+  uploadBar.style.display = 'block';
+  uploadBarFill.style.width = '0%';
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/posts');
+
+  xhr.upload.addEventListener('progress', e => {
+    if (e.lengthComputable) {
+      uploadBarFill.style.width = Math.round((e.loaded / e.total) * 90) + '%';
+    }
   });
+
+  xhr.addEventListener('load', async () => {
+    uploadBarFill.style.width = '100%';
+
+    if (xhr.status === 201) {
+      capturedBlob = null;
+      previewImg.src = '';
+      postName.value = '';
+      postMsg.value  = '';
+      charCount.textContent = '0 / 400';
+      showCameraState('idle');
+      showStep('camera');
+      showToast('Foto publicada com sucesso!', 'success');
+      await loadFeed();
+      document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
+    } else {
+      const err = JSON.parse(xhr.responseText || '{}');
+      showToast(err.error || 'Erro ao publicar. Tente novamente.', 'error');
+    }
+
+    setTimeout(() => { uploadBar.style.display = 'none'; }, 800);
+    btnPublish.disabled = false;
+    btnPublish.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Publicar`;
+  });
+
+  xhr.addEventListener('error', () => {
+    showToast('Erro de rede. Verifique a conexão.', 'error');
+    uploadBar.style.display = 'none';
+    btnPublish.disabled = false;
+    btnPublish.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Publicar`;
+  });
+
+  xhr.send(formData);
 });
 
-/* ── Upload ── */
-async function uploadPhoto(file) {
-  uploadStatus.style.display = 'block';
-  uploadFill.style.width = '0%';
-  uploadText.textContent = 'Enviando...';
-
-  return new Promise((resolve, reject) => {
-    const formData = new FormData();
-    formData.append('photo', file);
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/upload');
-    xhr.upload.addEventListener('progress', e => {
-      if (e.lengthComputable) {
-        uploadFill.style.width = Math.round((e.loaded / e.total) * 90) + '%';
-      }
-    });
-    xhr.addEventListener('load', () => {
-      uploadFill.style.width = '100%';
-      if (xhr.status === 200) {
-        uploadText.textContent = 'Foto enviada com sucesso!';
-        showToast('Foto adicionada à galeria!', 'success');
-        loadGallery();
-        setTimeout(() => { uploadStatus.style.display = 'none'; }, 2500);
-        resolve();
-      } else {
-        uploadText.textContent = 'Erro ao enviar.';
-        showToast('Erro ao enviar a foto.', 'error');
-        setTimeout(() => { uploadStatus.style.display = 'none'; }, 2500);
-        reject();
-      }
-    });
-    xhr.addEventListener('error', () => {
-      uploadText.textContent = 'Erro de rede.';
-      showToast('Erro de rede ao enviar.', 'error');
-      setTimeout(() => { uploadStatus.style.display = 'none'; }, 2500);
-      reject();
-    });
-    xhr.send(formData);
-  });
-}
-
-/* ── Gallery ── */
-async function loadGallery() {
+/* ── Feed ── */
+async function loadFeed() {
   try {
-    const res = await fetch('/api/photos');
-    photos = await res.json();
-    renderGallery();
+    const res = await fetch('/api/posts');
+    if (!res.ok) throw new Error('Erro ao carregar galeria');
+    posts = await res.json();
+    renderFeed();
   } catch {
-    galleryGrid.innerHTML = '<div class="gallery-empty"><p>Não foi possível carregar as fotos.</p></div>';
+    feedGrid.innerHTML = '<div class="feed-empty"><p>Não foi possível carregar a galeria.</p></div>';
   }
 }
 
-function renderGallery() {
-  if (!photos.length) {
-    photoCount.textContent = 'Ainda não há fotos. Seja o primeiro a compartilhar!';
-    galleryGrid.innerHTML = `
-      <div class="gallery-empty">
+function renderFeed() {
+  if (!posts.length) {
+    photoCount.textContent = 'Nenhuma foto ainda';
+    feedGrid.innerHTML = `
+      <div class="feed-empty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
           <circle cx="12" cy="13" r="4"/>
         </svg>
-        <p>Nenhuma foto ainda — tire a primeira!</p>
+        <p>Seja o primeiro a compartilhar um momento!</p>
       </div>`;
     return;
   }
 
-  photoCount.textContent = photos.length === 1
-    ? '1 foto compartilhada'
-    : `${photos.length} fotos compartilhadas`;
+  photoCount.textContent = posts.length === 1 ? '1 foto compartilhada' : `${posts.length} fotos compartilhadas`;
 
-  galleryGrid.innerHTML = photos.map((p, i) => `
-    <div class="photo-card" data-index="${i}">
-      <img
-        src="${p.url}"
-        alt="Foto ${i + 1}"
-        loading="lazy"
-        onerror="this.parentElement.style.display='none'"
-      />
-      <div class="photo-card-overlay">
-        <div class="photo-card-actions">
-          <button class="photo-action-btn" onclick="openLightbox(${i});event.stopPropagation()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l22 22M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/></svg>
-            Ver
-          </button>
-          <a class="photo-action-btn gold" href="${p.url}" download="henrique-thayna-${p.filename}" onclick="event.stopPropagation()">
+  feedGrid.innerHTML = posts.map((p, i) => {
+    const hasMsg = p.message && p.message.length > 0;
+    return `
+      <div class="feed-card" data-index="${i}">
+        <div class="feed-card-photo">
+          <img src="${p.photo_url}" alt="Foto de ${escHtml(p.name)}" loading="lazy" />
+          <div class="feed-card-overlay">
+            <button class="overlay-btn" data-action="view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Ver
+            </button>
+          </div>
+        </div>
+        <div class="feed-card-body">
+          <span class="feed-card-name">${escHtml(p.name)}</span>
+          <p class="feed-card-msg${hasMsg ? '' : ' no-msg'}">${hasMsg ? escHtml(p.message) : 'Sem mensagem'}</p>
+        </div>
+        <div class="feed-card-footer">
+          <span class="feed-card-time">${fmtDate(p.created_at)}</span>
+          <a class="btn-dl-sm" href="${p.photo_url}/download" download>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download
           </a>
         </div>
-      </div>
-    </div>
-  `).join('');
+      </div>`;
+  }).join('');
 
-  document.querySelectorAll('.photo-card').forEach(card => {
-    card.addEventListener('click', () => openLightbox(Number(card.dataset.index)));
+  feedGrid.querySelectorAll('.feed-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('a')) return;
+      openLightbox(Number(card.dataset.index));
+    });
   });
 }
 
 /* ── Lightbox ── */
-function openLightbox(index) {
-  lightboxIndex = index;
-  const photo = photos[index];
-  lightboxImg.src = photo.url;
-  lightboxDl.href = photo.url;
-  lightboxDl.download = `henrique-thayna-${photo.filename}`;
+function openLightbox(idx) {
+  lightboxIdx = idx;
+  const p = posts[idx];
+  lightboxImg.src = p.photo_url;
+  lightboxDl.href = `${p.photo_url}/download`;
+
+  const hasMsg = p.message && p.message.length > 0;
+  lightboxCaption.innerHTML = `
+    <p class="lc-name">${escHtml(p.name)}</p>
+    ${hasMsg ? `<p class="lc-msg">${escHtml(p.message)}</p>` : ''}
+  `;
+
   lightbox.style.display = 'flex';
-  lightboxOvr.style.display = 'block';
+  lightboxBg.style.display = 'block';
   document.body.style.overflow = 'hidden';
-  updateLightboxNav();
+  updateNav();
 }
 
 function closeLightbox() {
   lightbox.style.display = 'none';
-  lightboxOvr.style.display = 'none';
+  lightboxBg.style.display = 'none';
   document.body.style.overflow = '';
   lightboxImg.src = '';
 }
 
-function updateLightboxNav() {
-  lightboxPrev.style.opacity = lightboxIndex > 0 ? '1' : '0.25';
-  lightboxNext.style.opacity = lightboxIndex < photos.length - 1 ? '1' : '0.25';
+function updateNav() {
+  lightboxPrev.style.opacity = lightboxIdx > 0 ? '1' : '0.2';
+  lightboxNext.style.opacity = lightboxIdx < posts.length - 1 ? '1' : '0.2';
 }
 
 lightboxClose.addEventListener('click', closeLightbox);
-lightboxOvr.addEventListener('click', closeLightbox);
-
-lightboxPrev.addEventListener('click', () => {
-  if (lightboxIndex > 0) openLightbox(lightboxIndex - 1);
-});
-
-lightboxNext.addEventListener('click', () => {
-  if (lightboxIndex < photos.length - 1) openLightbox(lightboxIndex + 1);
-});
+lightboxBg.addEventListener('click', closeLightbox);
+lightboxPrev.addEventListener('click', () => { if (lightboxIdx > 0) openLightbox(lightboxIdx - 1); });
+lightboxNext.addEventListener('click', () => { if (lightboxIdx < posts.length - 1) openLightbox(lightboxIdx + 1); });
 
 document.addEventListener('keydown', e => {
   if (lightbox.style.display === 'none') return;
   if (e.key === 'Escape') closeLightbox();
-  if (e.key === 'ArrowLeft' && lightboxIndex > 0) openLightbox(lightboxIndex - 1);
-  if (e.key === 'ArrowRight' && lightboxIndex < photos.length - 1) openLightbox(lightboxIndex + 1);
+  if (e.key === 'ArrowLeft'  && lightboxIdx > 0)               openLightbox(lightboxIdx - 1);
+  if (e.key === 'ArrowRight' && lightboxIdx < posts.length - 1) openLightbox(lightboxIdx + 1);
 });
 
-/* ── Toast ── */
+/* ── Auto-refresh every 20s ── */
+function scheduleRefresh() {
+  setTimeout(async () => { await loadFeed(); scheduleRefresh(); }, 20000);
+}
+
+/* ── Helpers ── */
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
 function showToast(msg, type = 'info') {
   const tc = document.getElementById('toastContainer');
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
   t.textContent = msg;
   tc.appendChild(t);
-  setTimeout(() => {
-    t.style.transition = 'opacity 0.4s';
-    t.style.opacity = '0';
-    setTimeout(() => t.remove(), 400);
-  }, 3000);
-}
-
-/* ── Auto-refresh gallery ── */
-function scheduleRefresh() {
-  setTimeout(async () => {
-    await loadGallery();
-    scheduleRefresh();
-  }, 15000);
+  setTimeout(() => { t.style.transition = 'opacity .4s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3500);
 }
 
 /* ── Init ── */
-loadGallery();
+showCameraState('idle');
+showStep('camera');
+loadFeed();
 scheduleRefresh();
