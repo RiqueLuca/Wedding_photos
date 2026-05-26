@@ -13,18 +13,29 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+/* ── API routes ── */
 app.use('/api/posts',  require('./routes/posts'));
 app.use('/api/photos', require('./routes/photos'));
 
-// Global error handler
+/* ── Health check (used by Railway / Render) ── */
+app.get('/health', async (_req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', db: 'connected', ts: new Date().toISOString() });
+  } catch (err) {
+    res.status(503).json({ status: 'error', db: err.message });
+  }
+});
+
+/* ── Global error handler ── */
 app.use((err, _req, res, _next) => {
   const status = err.status || 500;
-  console.error(err.message);
+  console.error(`[${status}] ${err.message}`);
   res.status(status).json({ error: err.message });
 });
 
+/* ── Boot ── */
 async function start() {
-  // Run schema migrations
   const schema = fs.readFileSync(path.join(__dirname, 'db', 'schema.sql'), 'utf8');
   await pool.query(schema);
   console.log('✓ Database schema ready');
@@ -35,6 +46,6 @@ async function start() {
 }
 
 start().catch(err => {
-  console.error('Failed to start server:', err.message);
+  console.error('Failed to start:', err.message);
   process.exit(1);
 });
